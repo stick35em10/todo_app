@@ -10,6 +10,8 @@
         git branch -M main
         git remote add origin git@github.com:stick35em10/todo_app.git
         git add . && git commit -m "Step 1: Create Project Structure" && git push -u origin main
+        git add app/main.py && git commit -m "Step 2: Write FastAPI Code" && git push -u origin main
+        git add cmd.txt requirements.txt && git commit -m "Step 2: Write requirements.txt update cmd.txt" && git push -u origin main
     9
         touch -r .vscode/launch.json .vscode/settings.json
         git init
