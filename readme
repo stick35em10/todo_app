@@ -1,0 +1,200 @@
+To create a Task Management System (Todo, Doing, Done) in VS Code using FastAPI, Docker, and Kubernetes, follow this step-by-step guide. We'll cover:
+
+Setting up FastAPI in VS Code
+
+Running & Debugging in VS Code
+
+Dockerizing the App
+
+Deploying to Kubernetes (Minikube)
+
+VS Code Extensions for Better Workflow
+
+1. Setting Up FastAPI in VS Code
+Prerequisites
+VS Code (with Python extension)
+
+Python 3.9+
+
+Docker
+
+Kubernetes (Minikube or Docker Desktop Kubernetes)
+
+Step 1: Create Project Structure
+````
+todo-app/
+├── app/
+│   ├── __init__.py
+│   ├── main.py         # FastAPI app
+│   ├── models.py       # Pydantic models
+│   └── database.py     # Mock DB
+├── requirements.txt
+├── Dockerfile
+└── .vscode/            # VS Code configs
+    ├── launch.json     # Debug config
+    └── settings.json
+````
+
+Step 2: Write FastAPI Code
+#app/main.py
+
+#python
+````
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from enum import Enum
+from typing import List
+
+app = FastAPI()
+
+class TaskStatus(str, Enum):
+    TODO = "todo"
+    DOING = "doing"
+    DONE = "done"
+
+class Task(BaseModel):
+    id: int
+    title: str
+    status: TaskStatus
+
+# Mock Database
+tasks_db = [
+    Task(id=1, title="Learn FastAPI", status=TaskStatus.TODO),
+    Task(id=2, title="Deploy to Kubernetes", status=TaskStatus.DOING),
+]
+
+@app.get("/tasks", response_model=List[Task])
+def get_tasks():
+    return tasks_db
+
+@app.get("/tasks/{status}", response_model=List[Task])
+def get_tasks_by_status(status: TaskStatus):
+    return [task for task in tasks_db if task.status == status]
+
+@app.put("/tasks/{task_id}/{new_status}")
+def update_status(task_id: int, new_status: TaskStatus):
+    task = next((t for t in tasks_db if t.id == task_id), None)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    task.status = new_status
+    return {"message": "Status updated!"}
+````
+
+requirements.txt
+fastapi
+uvicorn
+
+2. Running & Debugging in VS Code
+
+Step 1: Configure VS Code for FastAPI
+Install Extensions:
+
+Python (Microsoft)
+
+Docker (Microsoft)
+
+Kubernetes (Microsoft)
+
+Create .vscode/launch.json (Debug Config)
+
+````
+json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "FastAPI Debug",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": ["app.main:app", "--reload"],
+            "jinja": true,
+            "justMyCode": true
+        }
+    ]
+}
+````
+Press F5 to debug.
+
+3. Dockerizing the App
+Step 1: Create Dockerfile
+dockerfile
+FROM python:3.9
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+Step 2: Build & Run
+bash
+docker build -t todo-app .
+docker run -p 8000:8000 --name todo-container todo-app
+Test: http://localhost:8000/docs (Swagger UI)
+
+4. Deploying to Kubernetes (Minikube)
+Step 1: Start Minikube
+bash
+minikube start
+Step 2: Create todo-deployment.yaml
+yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: todo
+  template:
+    metadata:
+      labels:
+        app: todo
+    spec:
+      containers:
+      - name: todo
+        image: todo-app:latest
+        ports:
+        - containerPort: 8000
+Step 3: Create todo-service.yaml
+yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: todo
+Step 4: Deploy
+bash
+kubectl apply -f todo-deployment.yaml
+kubectl apply -f todo-service.yaml
+minikube service todo-service  # Opens in browser
+5. VS Code Extensions for Better Workflow
+Extension	Purpose
+Python	Debugging, linting
+Docker	Manage containers
+Kubernetes	Deploy to K8s
+REST Client	Test API endpoints
+Remote - Containers	Dev inside Docker
+Final Workflow in VS Code
+Write FastAPI code (main.py).
+
+Debug (F5).
+
+Dockerize (Right-click Dockerfile → Build).
+
+Deploy to Kubernetes (kubectl apply).
+
+Test API (Swagger UI or REST Client).
+
+Next Steps
+Add PostgreSQL for persistence.
+
+Implement JWT Authentication.
+
+Set up CI/CD (GitHub Actions + ArgoCD).

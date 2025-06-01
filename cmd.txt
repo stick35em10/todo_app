@@ -1,0 +1,30 @@
+01.06.2025
+    22
+        
+        cd todo_app
+        touch Dockerfile
+        touch requirements.txt
+        mkdir app && cd app
+        touch main.py models.py database.py
+        
+        git branch -M main
+        git remote add origin git@github.com:stick35em10/todo_app.git
+        git add . && git commit -m "Step 1: Create Project Structure" && git push -u origin main
+    9
+        touch -r .vscode/launch.json .vscode/settings.json
+        git init
+            hint: Using 'master' as the name for the initial branch. This default branch name
+            hint: is subject to change. To configure the initial branch name to use in all
+            hint: of your new repositories, which will suppress this warning, call:
+            hint: 
+            hint:   git config --global init.defaultBranch <name>
+            hint: 
+            hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+            hint: 'development'. The just-created branch can be renamed via this command:
+            hint: 
+            hint:   git branch -m <name>
+        git branch -m development
+
+        python3 -m venv .env_todo_app
+        source .env_todo_app/bin/activate 
+        mkdir app && touch app/main.py
